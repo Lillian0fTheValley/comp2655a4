@@ -48,34 +48,7 @@ PIT_SZ		equ	4
 
 
 main:
-; TODO - Place your code here
-; Your output must match the C version of Mancala exactly
-;
-; The code here is some example code that does the following:
-; 1. prints a null terminated string using print_string
-; 2. prints out an unsigned integer that fits into a word using print_number
-; 3. a newline is printed after both output items
-;
-; You MUST remove the following testing code in your final submission
-; --- START of testing code ---
-;	lea 	test_str,a0
-;	jsr		print_string
-;
-;	move.b	#CR,d0			; move to new line
-;	jsr		write_char
-;	move.b	#LF,d0
-;	jsr		write_char
-;
-;	move.w	#3579,d1
-;
-;	jsr		print_number
-;
-;	move.b	#CR,d0			; move to new line
-;	jsr		write_char
-;	move.b	#LF,d0
-;	jsr		write_char
-;	
-; --- END of testing code ---
+
 
 ; --- BEGIN BOARD INITIALIZATION ---
 	lea	BOARD,a0
@@ -120,6 +93,35 @@ game	cmp.w	#TRUE,(a6)	;this block checks for either end state
 	
 	jsr     exit
 
+
+; TODO - Place your code here
+; Your output must match the C version of Mancala exactly
+;
+; The code here is some example code that does the following:
+; 1. prints a null terminated string using print_string
+; 2. prints out an unsigned integer that fits into a word using print_number
+; 3. a newline is printed after both output items
+;
+; You MUST remove the following testing code in your final submission
+; --- START of testing code ---
+;	lea 	test_str,a0
+;	jsr		print_string
+;
+;	move.b	#CR,d0			; move to new line
+;	jsr		write_char
+;	move.b	#LF,d0
+;	jsr		write_char
+;
+;	move.w	#3579,d1
+;
+;	jsr		print_number
+;
+;	move.b	#CR,d0			; move to new line
+;	jsr		write_char
+;	move.b	#LF,d0
+;	jsr		write_char
+;	
+; --- END of testing code ---
 
 
 ;---------------------------------------------------------------
