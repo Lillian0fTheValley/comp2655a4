@@ -1,0 +1,4 @@
+input d:\a4_main.bin
+input d:\A4LIB.BIN
+output d:\prog
+xdebug
