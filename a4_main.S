@@ -26,8 +26,8 @@ P2_START_INDEX	equ	TOTAL_PITS-1
 TRUE		equ	-1
 FALSE		equ	0
 
-CR		equ 13
-LF		equ 10
+CR		equ	13
+LF		equ	10
 
 PIT_STONES_NUM	equ	0
 PIT_OWNER	equ	1
@@ -58,25 +58,26 @@ main:
 ;
 ; You MUST remove the following testing code in your final submission
 ; --- START of testing code ---
-	lea 	test_str,a0
-	jsr		print_string
-
-	move.b	#CR,d0			; move to new line
-	jsr		write_char
-	move.b	#LF,d0
-	jsr		write_char
-
-	move.w	#3579,d1
-
-	jsr		print_number
-
-	move.b	#CR,d0			; move to new line
-	jsr		write_char
-	move.b	#LF,d0
-	jsr		write_char
-	
+;	lea 	test_str,a0
+;	jsr		print_string
+;
+;	move.b	#CR,d0			; move to new line
+;	jsr		write_char
+;	move.b	#LF,d0
+;	jsr		write_char
+;
+;	move.w	#3579,d1
+;
+;	jsr		print_number
+;
+;	move.b	#CR,d0			; move to new line
+;	jsr		write_char
+;	move.b	#LF,d0
+;	jsr		write_char
+;	
 ; --- END of testing code ---
 
+; --- BEGIN BOARD INITIALIZATION ---
 	lea	BOARD,a0
 	lea	QUIT,a6
 	lea	GAMEOVER,a7
@@ -107,7 +108,7 @@ store_init	move.b	#TRUE,PIT_STORE_BOOL(a0)	;this block initializes the store and
 		move.b	#0,PIT_STONES_NUM(a0)
 		bra	decr
 
-
+; --- BOARD INITIALIZATION DONE ---
 
 game	cmp.w	#TRUE,(a6)	;this block checks for either end state
 	;beq	end
