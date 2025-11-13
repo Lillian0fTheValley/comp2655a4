@@ -109,10 +109,10 @@ store_init	move.b	#TRUE,PIT_STORE_BOOL(a0)	;this block initializes the store and
 
 
 
-game	cmpi.w	#TRUE,GAMEOVER	;this block checks for either end state
-	beq	end
-	cmpi.w	#TRUE,QUIT
-	beq	endQuit
+game	cmp.w	#TRUE,(a6)	;this block checks for either end state
+	;beq	end
+	cmp.w	#TRUE,(a7)
+	;beq	endQuit
 
 	move.w	#PITS_PER_SIDE,d1
 	jsr	print_board
@@ -128,11 +128,11 @@ PIT		ds.b	PIT_SZ	;structure declaration
 
 BOARD		ds.b	PIT_SZ*TOTAL_PITS	;array of PIT struct
 
-QUIT		dc.b	#FALSE
+QUIT		dc.b	FALSE
 
-GAMEOVER	dc.b	#FALSE
+GAMEOVER	dc.b	FALSE
 
-PLAYER		dc.b	#PLAYER1
+PLAYER		dc.b	PLAYER1
 ;---------------------------------------------------------------
 ; Strings constants
 ;
