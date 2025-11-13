@@ -37,6 +37,13 @@ PIT_SZ		equ	4
 
 ;---------------------------------------------------------------
 ; Register Table
+;
+;
+;
+;
+;
+;
+;d7 = 
 ;---------------------------------------------------------------
 
 
@@ -71,34 +78,45 @@ main:
 ; --- END of testing code ---
 
 	lea	BOARD,a0
+	lea	QUIT,a6
+	lea	GAMEOVER,a7
 	move.w	#TOTAL_PITS-1,d7
-init	move.w	#TOTAL_PITS-1,d6
+init	move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
 	sub.w	d7,d6
 
 	move.b	#START_STONES,PIT_STONES_NUM(a0)
-	cmp.w	d6,#P2_STORE_INDEX	;branch if index > PITS_PER_SIDE + 1
-	bge	p2init
+	cmp.w	d6,#P2_STORE_INDEX	;branch if index > PITS_PER_SIDE + 1, sets pit to owner p2
+	bge	p2Init	
 	move.b	#PLAYER1,PIT_OWNER(a0)
 
-isStore	cmp.w	d6,#P1_STORE_INDEX
+isStore	cmp.w	d6,#P1_STORE_INDEX	;this block checks for valid store index and initializes store if true
 	beq	store_init
 	cmp.w	d6,#P2_STORE_INDEX
 	beq	store_init
 	move.b	#FALSE,PIT_STORE_BOOL(a0)
 
-inc	adda.l	#PIT_SZ,a0
+decr	adda.l	#PIT_SZ,a0	;this block updates the address and decrements and loops
 	dbra	d7,init
-	bra	game
+	bra	game		;branches to game start when board is fully initialized
 
-p2init	move.b	#PLAYER2,PIT_OWNER(a0)
+p2Init	move.b	#PLAYER2,PIT_OWNER(a0)	;this block sets pit owner to p2 and then branches to check if index is a store
 	bra	isStore
 	
 	
-store_init	move.b	#TRUE,PIT_STORE_BOOL(a0)
+store_init	move.b	#TRUE,PIT_STORE_BOOL(a0)	;this block initializes the store and then branches to decr unconditionally
 		move.b	#0,PIT_STONES_NUM(a0)
-		bra	inc
+		bra	decr
 
 
+
+game	cmp	#TRUE,GAMEOVER	;this block checks for either end state
+	beq	end
+	cmp	#TRUE,QUIT
+	beq	endQuit
+
+	move.w	#PITS_PER_SIDE,d1
+	jsr	print_board
+	
 	jsr     exit
 
 
@@ -106,11 +124,15 @@ store_init	move.b	#TRUE,PIT_STORE_BOOL(a0)
 ;---------------------------------------------------------------
 ;        DATA 
 ;---------------------------------------------------------------
-PIT	ds.b	PIT_SZ	;structure declaration
+PIT		ds.b	PIT_SZ	;structure declaration
 
-BOARD	ds.b	PIT_SZ*TOTAL_PITS	;array of PIT struct
+BOARD		ds.b	PIT_SZ*TOTAL_PITS	;array of PIT struct
 
+QUIT		dc.b	#FALSE
 
+GAMEOVER	dc.b	#FALSE
+
+PLAYER		dc.b	#PLAYER1
 ;---------------------------------------------------------------
 ; Strings constants
 ;
