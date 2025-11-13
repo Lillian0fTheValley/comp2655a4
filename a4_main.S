@@ -85,13 +85,13 @@ init	move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
 	sub.w	d7,d6
 
 	move.b	#START_STONES,PIT_STONES_NUM(a0)
-	cmp.w	d6,#P2_STORE_INDEX	;branch if index > PITS_PER_SIDE + 1, sets pit to owner p2
-	bge	p2Init	
+	cmp.w	#P2_STORE_INDEX,d6	;branch if index > PITS_PER_SIDE + 1, sets pit to owner p2
+	blt	p2Init	
 	move.b	#PLAYER1,PIT_OWNER(a0)
 
-isStore	cmp.w	d6,#P1_STORE_INDEX	;this block checks for valid store index and initializes store if true
+isStore	cmp.w	#P1_STORE_INDEX,d6	;this block checks for index and initializes store if valid
 	beq	store_init
-	cmp.w	d6,#P2_STORE_INDEX
+	cmp.w	#P2_STORE_INDEX,d6
 	beq	store_init
 	move.b	#FALSE,PIT_STORE_BOOL(a0)
 
@@ -109,9 +109,9 @@ store_init	move.b	#TRUE,PIT_STORE_BOOL(a0)	;this block initializes the store and
 
 
 
-game	cmp	#TRUE,GAMEOVER	;this block checks for either end state
+game	cmpi.w	#TRUE,GAMEOVER	;this block checks for either end state
 	beq	end
-	cmp	#TRUE,QUIT
+	cmpi.w	#TRUE,QUIT
 	beq	endQuit
 
 	move.w	#PITS_PER_SIDE,d1
