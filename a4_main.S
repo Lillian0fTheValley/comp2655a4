@@ -20,7 +20,7 @@ PLAYER1		equ	1
 PLAYER2		equ	2
 P1_STORE_INDEX	equ	0
 P2_STORE_INDEX	equ	PITS_PER_SIDE+1
-P1_START_INDEX	equ	PITS_PER_SIDE
+P1_START_INDEX	equ	PITS_PER_SIDE	;TODO ask if i'm allowed to add my own constants
 P2_START_INDEX	equ	TOTAL_PITS-1
 
 TRUE		equ	-1
@@ -47,17 +47,14 @@ PIT_SZ		equ	4
 ;---------------------------------------------------------------
 
 
-main:
-
-
 ; --- BOARD INITIALIZATION ---
-	lea	BOARD,a1
+main:	lea	BOARD,a1
 	lea	QUIT,a6
 	lea	GAMEOVER,a7
 	lea	VALIDINPUT,a5
 	lea	PLAYER,a4
 	move.w	#TOTAL_PITS-1,d7
-init	move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
+init:	move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
 	sub.w	d7,d6
 
 	move.b	#START_STONES,PIT_STONES_NUM(a1)
@@ -65,27 +62,27 @@ init	move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
 	bhi	p2Init	
 	move.b	#PLAYER1,PIT_OWNER(a1)
 
-isStore	cmp.w	#P1_STORE_INDEX,d6	;this block checks for index and initializes store if valid
-	beq	store_init
-	cmp.w	#P2_STORE_INDEX,d6
-	beq	store_init
-	move.b	#FALSE,PIT_STORE_BOOL(a1)
+isStore:	cmp.w	#P1_STORE_INDEX,d6	;this block checks for index and initializes store if valid
+		beq	store_init
+		cmp.w	#P2_STORE_INDEX,d6
+		beq	store_init
+		move.b	#FALSE,PIT_STORE_BOOL(a1)
 
-decr	adda.l	#PIT_SZ,a1	;this block updates the address and decrements and loops
+decr:	adda.l	#PIT_SZ,a1	;this block updates the address and decrements and loops
 	dbra	d7,init
 	bra	game		;branches to game start when board is fully initialized
 
-p2Init	move.b	#PLAYER2,PIT_OWNER(a1)	;this block sets pit owner to p2 and then branches to check if index is a store
+p2Init:	move.b	#PLAYER2,PIT_OWNER(a1)	;this block sets pit owner to p2 and then branches to check if index is a store
 	bra	isStore
 	
 	
-store_init	move.b	#TRUE,PIT_STORE_BOOL(a1)	;this block initializes the store and then branches to decr unconditionally
+store_init:	move.b	#TRUE,PIT_STORE_BOOL(a1)	;this block initializes the store and then branches to decr unconditionally
 		move.b	#0,PIT_STONES_NUM(a1)
 		bra	decr
 
 ; --- DRAWING BOARD AND RECEIVING INPUT ---
 
-game	cmp.w	#TRUE,(a6)	;this block checks for either end state
+game:	cmp.w	#TRUE,(a6)	;this block checks for either end state
 	;beq	end
 	cmp.w	#TRUE,(a7)
 	;beq	endQuit
@@ -95,11 +92,11 @@ game	cmp.w	#TRUE,(a6)	;this block checks for either end state
 	jsr	print_board
 	bra	input
 
-invalid	move.b	#FALSE,(a5)
+invalid:	move.b	#FALSE,(a5)
 	lea	strInvalid,a0
 	jsr	print_string
 	
-input	lea	strPlayer,a0	;"Player"
+input:	lea	strPlayer,a0	;"Player"
 	jsr	print_string
 	
 	move.w	(a0),d1		;"current player"
@@ -137,21 +134,21 @@ input	lea	strPlayer,a0	;"Player"
 	
 	jsr     exit
 
-play	tst.b	(a6)		;checks validInput == true
-	bne	quitGame
+play:		tst.b	(a6)		;checks validInput == true
+		bne	quitGame
 
-	cmp.b	#PLAYER2,(a4)
-	beq	p2Index
-	move.w	#P1_START_INDEX,d7
-	move.w	#P1_STORE_INDEX,d6
-p2Index	move.w	#P2_START_INDEX,d7
-	move.w	#P2_STORE_INDEX,d7
-
-
+		cmp.b	#PLAYER2,(a4)
+		beq	p2Index
+		move.w	#P1_START_INDEX,d7
+		move.w	#P1_STORE_INDEX,d6
+p2Index:	move.w	#P2_START_INDEX,d7
+		move.w	#P2_STORE_INDEX,d7
 
 
 
-quitGame
+
+
+quitGame:
 
 	;TODO ask about boolean -1 and how i'm using booleans
 
