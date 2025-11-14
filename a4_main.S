@@ -51,34 +51,36 @@ main:
 
 
 ; --- BEGIN BOARD INITIALIZATION ---
-	lea	BOARD,a0
+	lea	BOARD,a1
 	lea	QUIT,a6
 	lea	GAMEOVER,a7
+	lea	VALIDINPUT,a5
+	lea	PLAYER,a4
 	move.w	#TOTAL_PITS-1,d7
 init	move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
 	sub.w	d7,d6
 
-	move.b	#START_STONES,PIT_STONES_NUM(a0)
+	move.b	#START_STONES,PIT_STONES_NUM(a1)
 	cmp.w	#P2_STORE_INDEX,d6	;branch if index > PITS_PER_SIDE + 1, sets pit to owner p2
-	blt	p2Init	
-	move.b	#PLAYER1,PIT_OWNER(a0)
+	bhi	p2Init	
+	move.b	#PLAYER1,PIT_OWNER(a1)
 
 isStore	cmp.w	#P1_STORE_INDEX,d6	;this block checks for index and initializes store if valid
 	beq	store_init
 	cmp.w	#P2_STORE_INDEX,d6
 	beq	store_init
-	move.b	#FALSE,PIT_STORE_BOOL(a0)
+	move.b	#FALSE,PIT_STORE_BOOL(a1)
 
-decr	adda.l	#PIT_SZ,a0	;this block updates the address and decrements and loops
+decr	adda.l	#PIT_SZ,a1	;this block updates the address and decrements and loops
 	dbra	d7,init
 	bra	game		;branches to game start when board is fully initialized
 
-p2Init	move.b	#PLAYER2,PIT_OWNER(a0)	;this block sets pit owner to p2 and then branches to check if index is a store
+p2Init	move.b	#PLAYER2,PIT_OWNER(a1)	;this block sets pit owner to p2 and then branches to check if index is a store
 	bra	isStore
 	
 	
-store_init	move.b	#TRUE,PIT_STORE_BOOL(a0)	;this block initializes the store and then branches to decr unconditionally
-		move.b	#0,PIT_STONES_NUM(a0)
+store_init	move.b	#TRUE,PIT_STORE_BOOL(a1)	;this block initializes the store and then branches to decr unconditionally
+		move.b	#0,PIT_STONES_NUM(a1)
 		bra	decr
 
 ; --- BOARD INITIALIZATION DONE ---
@@ -88,11 +90,56 @@ game	cmp.w	#TRUE,(a6)	;this block checks for either end state
 	cmp.w	#TRUE,(a7)
 	;beq	endQuit
 
+	
 	move.w	#PITS_PER_SIDE,d1
 	jsr	print_board
+	bra	input
+
+invalid	move.b	#FALSE,(a5)
+	lea	strInvalid,a0
+	jsr	print_string
 	
+input	lea	strPlayer,a0	;"Player"
+	jsr	print_string
+	
+	move.w	(a0),d1		;"current player"
+	jsr	print_number
+	
+	lea	strChoose,a0	;" - choose pit (1- "
+	jsr	print_string
+	move.w	#PITS_PER_SIDE,d1
+	jsr	print_number	;"x"
+
+	lea	strQuit,a0	;") or 'q' to quit: "
+	jsr	print_string
+
+	jsr	read_char
+	
+	move.b	d0,d1	;moving input to d1
+
+	move.b	#CR,d0	
+	jsr	write_char
+	move.b	#LF,d0
+	jsr	write_char
+	
+	move.b	d1,d0	;moving input back to d0 i guess
+
+	cmp.b	#'q',d0	;
+	beq	play
+	
+	cmp.b	#'0',d0
+	bls	invalid
+	move.b	#PITS_PER_SIDE,d1
+	add.b	#'0',d1
+	cmp.b	d1,d0
+	bgt	invalid
+
+	move.b	#TRUE,(a5)
 	jsr     exit
 
+play
+
+quitGame
 
 ; TODO - Place your code here
 ; Your output must match the C version of Mancala exactly
@@ -135,11 +182,32 @@ QUIT		dc.b	FALSE
 
 GAMEOVER	dc.b	FALSE
 
+VALIDINPUT	dc.b	FALSE
+
 PLAYER		dc.b	PLAYER1
 ;---------------------------------------------------------------
 ; Strings constants
 ;
 ; Your output must match the C version of Mancala exactly
 ;---------------------------------------------------------------
-test_str:	dc.b "This is a null-terminated string to test the print_string function",0;
+test_str:	dc.b	"This is a null-terminated string to test the print_string function",0;
+
+strPlayer	dc.b	"Player ",0;
+
+strChoose	dc.b	" - choose pit (1-",0
+
+strQuit		dc.b	") or 'q' to quit: ",0
+
+strEmpty	dc.b	"Empty pit selected - ",0
+
+strInvalid	dc.b	"Invalid pit number - ",0
+
+strP1win	dc.b	"Player 1 wins",0
+
+strP2win	dc.b	"Player 2 wins",0
+
+strTie		dc.b	"The result is a tie",0
+
+strQuitEnd	dc.b	" quit - game ends without a winner",0
+
 
