@@ -50,7 +50,7 @@ PIT_SZ		equ	4
 main:
 
 
-; --- BEGIN BOARD INITIALIZATION ---
+; --- BOARD INITIALIZATION ---
 	lea	BOARD,a1
 	lea	QUIT,a6
 	lea	GAMEOVER,a7
@@ -83,7 +83,7 @@ store_init	move.b	#TRUE,PIT_STORE_BOOL(a1)	;this block initializes the store and
 		move.b	#0,PIT_STONES_NUM(a1)
 		bra	decr
 
-; --- BOARD INITIALIZATION DONE ---
+; --- DRAWING BOARD AND RECEIVING INPUT ---
 
 game	cmp.w	#TRUE,(a6)	;this block checks for either end state
 	;beq	end
@@ -117,12 +117,12 @@ input	lea	strPlayer,a0	;"Player"
 	
 	move.b	d0,d1	;moving input to d1
 
-	move.b	#CR,d0	
+	move.b	#CR,d0		;CRLF after receiving input
 	jsr	write_char
 	move.b	#LF,d0
 	jsr	write_char
 	
-	move.b	d1,d0	;moving input back to d0 i guess
+	move.b	d1,d0		;moving input back to d0 i guess
 
 	cmp.b	#'q',d0	;
 	beq	play
@@ -132,7 +132,7 @@ input	lea	strPlayer,a0	;"Player"
 	move.b	#PITS_PER_SIDE,d1
 	add.b	#'0',d1
 	cmp.b	d1,d0
-	bgt	invalid
+	bgt	invalid		;TODO figure out if this will reach invalid
 	move.b	#TRUE,(a5)	;set validInput = true
 	
 	jsr     exit
@@ -140,10 +140,20 @@ input	lea	strPlayer,a0	;"Player"
 play	tst.b	(a6)		;checks validInput == true
 	bne	quitGame
 
+	cmp.b	#PLAYER2,(a4)
+	beq	p2Index
 	move.w	#P1_START_INDEX,d7
 	move.w	#P1_STORE_INDEX,d6
+p2Index	move.w	#P2_START_INDEX,d7
+	move.w	#P2_STORE_INDEX,d7
+
+
+
+
 
 quitGame
+
+	;TODO ask about boolean -1 and how i'm using booleans
 
 ; TODO - Place your code here
 ; Your output must match the C version of Mancala exactly
