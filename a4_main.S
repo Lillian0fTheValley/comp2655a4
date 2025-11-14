@@ -133,11 +133,15 @@ input	lea	strPlayer,a0	;"Player"
 	add.b	#'0',d1
 	cmp.b	d1,d0
 	bgt	invalid
-
-	move.b	#TRUE,(a5)
+	move.b	#TRUE,(a5)	;set validInput = true
+	
 	jsr     exit
 
-play
+play	tst.b	(a6)		;checks validInput == true
+	bne	quitGame
+
+	move.w	#P1_START_INDEX,d7
+	move.w	#P1_STORE_INDEX,d6
 
 quitGame
 
