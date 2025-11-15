@@ -47,7 +47,7 @@ PIT_SZ		equ	4
 ;---------------------------------------------------------------
 
 
-; --- BOARD INITIALIZATION ---
+; --- BOARD INITIALIZATION ---	;TODO YOU NEED TO REWRITE INITIALIZATION TO BE IN A FOR LOOP
 main:		lea	BOARD,a1
 		lea	QUIT,a6
 		lea	GAMEOVER,a3
@@ -149,23 +149,27 @@ p2Turn:	move.w	#P2_START_INDEX,d7
 	move.w	PIT_STONES_NUM(a1,d7.w),d5
 	clr.b	PIT_STONES_NUM(a1,d7.w)
 
-place:	cmp.w	#P1_STORE_INDEX,d7
+
+	;beginning of stone distribution loop
+wrap:	tst.w	d5
+	beq	steal
+	cmp.w	#P1_STORE_INDEX,d7	;for wrapping around array end
 	bne	shift
 	move.w	#P2_START_INDEX,d7
 	
 shift:	sub.w	#1,d7
 
 	cmp.b	#TRUE,PIT_STORE_BOOL(a1,d7.w)
-	bne	something after pcheck
+	bne	place
 	
 pCheck:	cmp.b	(a4),PIT_OWNER(a1,d7.w)
-	bne	something after pcheck
+	bne	wrap
 	
-	add.w	#1,PIT_STONES_NUM(a1,d7.w)
+place:	add.w	#1,PIT_STONES_NUM(a1,d7.w)
 	tst.w	d5	
-	dbgt	d5,place ;loops if stones > 0, also decrements stone
-
-
+	dbra	d5,wrap
+	
+steal:
 
 score:
 
