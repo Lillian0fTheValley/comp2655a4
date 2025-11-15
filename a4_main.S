@@ -19,9 +19,7 @@ START_STONES	equ	3
 PLAYER1		equ	1
 PLAYER2		equ	2
 P1_STORE_INDEX	equ	0
-P2_STORE_INDEX	equ	PITS_PER_SIDE+1
-P1_START_INDEX	equ	PITS_PER_SIDE	
-P2_START_INDEX	equ	TOTAL_PITS-1
+P2_STORE_INDEX	equ	PITS_PER_SIDE+1		
 
 TRUE		equ	-1
 FALSE		equ	0
@@ -138,10 +136,10 @@ play:	tst.b	(a6)		;checks quit == true
 
 	cmp.b	#PLAYER2,(a4)
 	beq	p2Turn
-	move.w	#P1_START_INDEX,d7
-	move.w	#P1_STORE_INDEX,d6
-p2Turn:	move.w	#P2_START_INDEX,d7
 	move.w	#P2_STORE_INDEX,d7
+	move.w	#P1_STORE_INDEX,d6
+p2Turn:	move.w	#TOTAL_PITS,d7
+	move.w	#P2_STORE_INDEX,d6
 
 	sub.w	#'0',d0		;converting input to int
 	sub.w	d0,d7		;calculating index = startIndex - input
@@ -155,7 +153,7 @@ wrap:	tst.w	d5
 	beq	steal
 	cmp.w	#P1_STORE_INDEX,d7	;for wrapping around array end
 	bne	shift
-	move.w	#P2_START_INDEX,d7
+	move.w	#TOTAL_PITS-1,d7
 	
 shift:	sub.w	#1,d7
 
@@ -169,7 +167,23 @@ place:	add.w	#1,PIT_STONES_NUM(a1,d7.w)
 	tst.w	d5	
 	dbra	d5,wrap
 	
-steal:
+steal:	cmp.w	#FALSE,PIT_STORE_BOOL(a1,d7.w)
+	bne	later
+	cmp.w	(a4),PIT_OWNER(a1,d7.w)
+	bne	later
+	cmp.w	#1,PIT_STONES_NUM(a1,d7.w)
+	bne	later
+	
+	move.w	#TOTAL_PITS,d4
+	sub.w	d7,d4	;opposite = TOTAL_PITS - index
+
+	tst.b	PIT_STONES_NUM(a1,d4.w)		;this block adds index pit and opposite pit's stones to your store if opposite pit 
+	beq	SOMETHINGLATER
+	move.b	PIT_STONES_NUM(a1,d4.w),d3
+	add.b	#1,d3
+	clr.b	PIT_STONES_NUM(a1,d4.w)
+	clr.b	PIT_STONES_NUM(a1,d7.w)	
+	add.b	d3,PIT_STONES_NUM(a1,d6.w)
 
 score:
 
