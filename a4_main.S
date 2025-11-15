@@ -20,7 +20,7 @@ PLAYER1		equ	1
 PLAYER2		equ	2
 P1_STORE_INDEX	equ	0
 P2_STORE_INDEX	equ	PITS_PER_SIDE+1
-P1_START_INDEX	equ	PITS_PER_SIDE	;TODO ask if i'm allowed to add my own constants
+P1_START_INDEX	equ	PITS_PER_SIDE	
 P2_START_INDEX	equ	TOTAL_PITS-1
 
 TRUE		equ	-1
@@ -48,37 +48,37 @@ PIT_SZ		equ	4
 
 
 ; --- BOARD INITIALIZATION ---
-main:	lea	BOARD,a1
-	lea	QUIT,a6
-	lea	GAMEOVER,a7
-	lea	VALIDINPUT,a5
-	lea	PLAYER,a4
-	move.w	#TOTAL_PITS-1,d7
-init:	move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
-	sub.w	d7,d6
+main:		lea	BOARD,a1
+		lea	QUIT,a6
+		lea	GAMEOVER,a3
+		lea	VALIDINPUT,a5
+		lea	PLAYER,a4
+		move.w	#TOTAL_PITS-1,d7
+init:		move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
+		sub.w	d7,d6
 
-	move.b	#START_STONES,PIT_STONES_NUM(a1)
-	cmp.w	#P2_STORE_INDEX,d6	;branch if index > PITS_PER_SIDE + 1, sets pit to owner p2
-	bhi	p2Init	
-	move.b	#PLAYER1,PIT_OWNER(a1)
+		move.b	#START_STONES,PIT_STONES_NUM(a1)
+		cmp.w	#P2_STORE_INDEX,d6	;branch if index > PITS_PER_SIDE + 1, sets pit to owner p2
+		bhi	p2Init	
+		move.b	#PLAYER1,PIT_OWNER(a1)
 
 isStore:	cmp.w	#P1_STORE_INDEX,d6	;this block checks for index and initializes store if valid
-		beq	store_init
+		beq	storeInit
 		cmp.w	#P2_STORE_INDEX,d6
-		beq	store_init
+		beq	storeInit
 		move.b	#FALSE,PIT_STORE_BOOL(a1)
 
-decr:	adda.l	#PIT_SZ,a1	;this block updates the address and decrements and loops
-	dbra	d7,init
-	bra	game		;branches to game start when board is fully initialized
+decrement:	adda.l	#PIT_SZ,a1	;this block updates the address and decrements and loops
+		dbra	d7,init
+		bra	game		;branches to game start when board is fully initialized
 
-p2Init:	move.b	#PLAYER2,PIT_OWNER(a1)	;this block sets pit owner to p2 and then branches to check if index is a store
-	bra	isStore
+p2Init:		move.b	#PLAYER2,PIT_OWNER(a1)	;this block sets pit owner to p2 and then branches to check if index is a store
+		bra	isStore
 	
 	
-store_init:	move.b	#TRUE,PIT_STORE_BOOL(a1)	;this block initializes the store and then branches to decr unconditionally
+storeInit:	move.b	#TRUE,PIT_STORE_BOOL(a1)	;this block initializes the store and then branches to decr unconditionally
 		move.b	#0,PIT_STONES_NUM(a1)
-		bra	decr
+		bra	decrement
 
 ; --- DRAWING BOARD AND RECEIVING INPUT ---
 
@@ -122,35 +122,54 @@ input:	lea	strPlayer,a0	;"Player"
 	move.b	d1,d0		;moving input back to d0 i guess
 
 	cmp.b	#'q',d0	;
-	beq	play
+	beq	quit
 	
 	cmp.b	#'0',d0
 	bls	invalid
 	move.b	#PITS_PER_SIDE,d1
 	add.b	#'0',d1
 	cmp.b	d1,d0
-	bgt	invalid		;TODO figure out if this will reach invalid
+	bgt	invalid	
 	move.b	#TRUE,(a5)	;set validInput = true
 	
-	jsr     exit
+quit:	move.b	#TRUE,(a6)
+play:	tst.b	(a6)		;checks quit == true
+	bne	score
 
-play:		tst.b	(a6)		;checks validInput == true
-		bne	quitGame
+	cmp.b	#PLAYER2,(a4)
+	beq	p2Turn
+	move.w	#P1_START_INDEX,d7
+	move.w	#P1_STORE_INDEX,d6
+p2Turn:	move.w	#P2_START_INDEX,d7
+	move.w	#P2_STORE_INDEX,d7
 
-		cmp.b	#PLAYER2,(a4)
-		beq	p2Index
-		move.w	#P1_START_INDEX,d7
-		move.w	#P1_STORE_INDEX,d6
-p2Index:	move.w	#P2_START_INDEX,d7
-		move.w	#P2_STORE_INDEX,d7
+	sub.w	#'0',d0		;converting input to int
+	sub.w	d0,d7		;calculating index = startIndex - input
+	
+	move.w	PIT_STONES_NUM(a1,d7.w),d5
+	clr.b	PIT_STONES_NUM(a1,d7.w)
+
+place:	cmp.w	#P1_STORE_INDEX,d7
+	bne	shift
+	move.w	#P2_START_INDEX,d7
+	
+shift:	sub.w	#1,d7
+
+	cmp.b	#TRUE,PIT_STORE_BOOL(a1,d7.w)
+	bne	something after pcheck
+	
+pCheck:	cmp.b	(a4),PIT_OWNER(a1,d7.w)
+	bne	something after pcheck
+	
+	add.w	#1,PIT_STONES_NUM(a1,d7.w)
+	tst.w	d5	
+	dbgt	d5,place ;loops if stones > 0, also decrements stone
 
 
 
+score:
 
-
-quitGame:
-
-	;TODO ask about boolean -1 and how i'm using booleans
+	jsr exit
 
 ; TODO - Place your code here
 ; Your output must match the C version of Mancala exactly
