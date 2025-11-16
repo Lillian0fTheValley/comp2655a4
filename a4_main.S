@@ -52,33 +52,29 @@ main:		lea	BOARD,a1
 		lea	VALIDINPUT,a5
 		lea	PLAYER,a4
 		lea	ISEMPTY,a2
-		move.w	#TOTAL_PITS-1,d7
-init:		move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
-		sub.w	d7,d6
 
-		move.b	#START_STONES,PIT_STONES_NUM(a1)
-		cmp.w	#P2_STORE_INDEX,d6	;branch if index > PITS_PER_SIDE + 1, sets pit to owner p2
-		bhi	p2Init	
-		move.b	#PLAYER1,PIT_OWNER(a1)
-
-isStore:	cmp.w	#P1_STORE_INDEX,d6	;this block checks for index and initializes store if valid
-		beq	storeInit
-		cmp.w	#P2_STORE_INDEX,d6
-		beq	storeInit
-		move.b	#FALSE,PIT_STORE_BOOL(a1)
-
-decrement:	adda.l	#PIT_SZ,a1	;this block updates the address and decrements and loops
-		dbra	d7,init
-		bra	game		;branches to game start when board is fully initialized
-
-p2Init:		move.b	#PLAYER2,PIT_OWNER(a1)	;this block sets pit owner to p2 and then branches to check if index is a store
+		clr.l	d7
+init:		cmp.w	#TOTAL_PITS,d7
+		beq	game
+		move.w	d7,d6
+		mulu.w	#PIT_SZ,d6
+		move.b	#START_STONES,PIT_STONES_NUM(a1,d6.l)
+		move.b	#FALSE,PIT_STORE_BOOL(a1,d6.l)
+		cmp.w	PITS_PER_SIDE,d7
+		bls	p1Init
+		move.b	#PLAYER2,PIT_OWNER(a1,d6.l)
 		bra	isStore
+p1Init:		move.b	#PLAYER1,PIT_OWNER(a1,d6.l)
 	
+isStore:	add.w	#1,d7			;post increment
+		cmp.w	#P1_STORE_INDEX+1,d7	
+		bne	init
+		cmp.w	#P2_STORE_INDEX+1,d7
+		bne	init
+		move.b	#TRUE,PIT_STORE_BOOL(a1,d6.l)
+		move.b	#0,PIT_STONES_NUM(a1,d6.l)
+		bra	init
 	
-storeInit:	move.b	#TRUE,PIT_STORE_BOOL(a1)	;this block initializes the store and then branches to decr unconditionally
-		move.b	#0,PIT_STONES_NUM(a1)
-		bra	decrement
-
 ; --- DRAWING BOARD AND RECEIVING INPUT ---
 
 game:	cmp.w	#TRUE,(a6)	;this block checks for either end state
