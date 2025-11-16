@@ -51,6 +51,7 @@ main:		lea	BOARD,a1
 		lea	GAMEOVER,a3
 		lea	VALIDINPUT,a5
 		lea	PLAYER,a4
+		lea	ISEMPTY,a2
 		move.w	#TOTAL_PITS-1,d7
 init:		move.w	#TOTAL_PITS-1,d6	;start of board initialization loop
 		sub.w	d7,d6
@@ -109,13 +110,13 @@ input:	lea	strPlayer,a0	;"Player"
 	jsr	print_string
 
 	jsr	read_char
-	
 	move.b	d0,d1	;moving input to d1
-
 	move.b	#CR,d0		;CRLF after receiving input
 	jsr	write_char
 	move.b	#LF,d0
 	jsr	write_char
+	;expected output: Player x - choose pit (1-PITS_PER_SIDE) or 'q' to quit: 
+	
 	
 	move.b	d1,d0		;moving input back to d0 i guess
 
@@ -129,23 +130,25 @@ input:	lea	strPlayer,a0	;"Player"
 	cmp.b	d1,d0
 	bgt	invalid	
 	move.b	#TRUE,(a5)	;set validInput = true
+	bra	play
 	
-quit:	move.b	#TRUE,(a6)
-play:	tst.b	(a6)		;checks quit == true
-	bne	score
+quit:	move.b	#TRUE,(a6)	
 
+play:	tst.b	(a6)		;checks quit == true
+	bne	game
 	cmp.b	#PLAYER2,(a4)
 	beq	p2Turn
 	move.w	#P2_STORE_INDEX,d7
 	move.w	#P1_STORE_INDEX,d6
+	bra	convert
 p2Turn:	move.w	#TOTAL_PITS,d7
 	move.w	#P2_STORE_INDEX,d6
 
-	sub.w	#'0',d0		;converting input to int
-	sub.w	d0,d7		;calculating index = startIndex - input
+convert:	sub.w	#'0',d0		;converting input to int
+		sub.w	d0,d7		;calculating index = startIndex - input
 	
-	move.w	PIT_STONES_NUM(a1,d7.w),d5
-	clr.b	PIT_STONES_NUM(a1,d7.w)
+		move.w	PIT_STONES_NUM(a1,d7.w),d5
+		clr.b	PIT_STONES_NUM(a1,d7.w)
 
 
 	;beginning of stone distribution loop
@@ -160,7 +163,7 @@ shift:	sub.w	#1,d7
 	cmp.b	#TRUE,PIT_STORE_BOOL(a1,d7.w)
 	bne	place
 	
-pCheck:	cmp.b	(a4),PIT_OWNER(a1,d7.w)
+:	cmp.b	(a4),PIT_OWNER(a1,d7.w)	;skip opponent's store
 	bne	wrap
 	
 place:	add.w	#1,PIT_STONES_NUM(a1,d7.w)
@@ -178,12 +181,44 @@ steal:	cmp.w	#FALSE,PIT_STORE_BOOL(a1,d7.w)
 	sub.w	d7,d4	;opposite = TOTAL_PITS - index
 
 	tst.b	PIT_STONES_NUM(a1,d4.w)		;this block adds index pit and opposite pit's stones to your store if opposite pit 
-	beq	SOMETHINGLATER
+	beq	pCheck
 	move.b	PIT_STONES_NUM(a1,d4.w),d3
 	add.b	#1,d3
 	clr.b	PIT_STONES_NUM(a1,d4.w)
 	clr.b	PIT_STONES_NUM(a1,d7.w)	
 	add.b	d3,PIT_STONES_NUM(a1,d6.w)
+
+pCheck:		move.w	#P1_STORE_INDEX,d7	
+		move.b	#TRUE,(a2)
+		move.w	#1,d6
+		cmp.b	#PLAYER2,(a4)
+		bne	emptyCheckLoop
+		move.w	#P2_STORE_INDEX,d7
+
+emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
+		bge	turnChange	;break loop if d6 > P2_STORE_INDEX
+		tst.b	(a2)
+		beq	turnChange	;break loop if !isEmpty
+		move.w	#PIT_SZ,d2
+		mulu.w	d6,d2
+		add.l	d7,d2
+		add.w	#1,d6		;post increment d6
+		cmp.w	#0,PIT_STONES_NUM(a1,d2.l)
+		beq	emptyCheckLoop	;set isEmpty to false if stones != 0
+		move.b	#FALSE,(a2)
+		bra	emptyCheckLoop	;loop
+		
+
+		
+
+		
+turnChange	cmp.b	#PLAYER1,(a4)
+		bne	setP1
+		move.b	#PLAYER2,(a4)
+		jmp	input
+setP1		move.b	#PLAYER1,(a4)
+		jmp	input
+
 
 score:
 
@@ -233,6 +268,8 @@ GAMEOVER	dc.b	FALSE
 VALIDINPUT	dc.b	FALSE
 
 PLAYER		dc.b	PLAYER1
+
+ISEMPTY		dc.b	TRUE
 ;---------------------------------------------------------------
 ; Strings constants
 ;
