@@ -53,8 +53,8 @@ main:		lea	BOARD,a1
 		lea	QUIT,a6
 		clr.l   d0
 		clr.l	d7
-init:		cmp.w	#TOTAL_PITS,d7		;break loop if index == TOTAL_PITS
-		beq	game
+init:		cmp.w	#TOTAL_PITS,d7		;beginning of the board initialization for loop
+		beq	game	;break loop if d7 = TOTAL_PITS
 		move.w	d7,d6
 		mulu.w	#PIT_SZ,d6
 		move.w	#START_STONES,PIT_STONES_NUM(a1,d6.l)
@@ -74,16 +74,16 @@ isStore:	divu.w	#PIT_SZ,d6
 storeInit:	mulu.w	#PIT_SZ,d6
 		move.b	#TRUE,PIT_STORE_BOOL(a1,d6.l)
 		move.w	#0,PIT_STONES_NUM(a1,d6.l)
-		bra	init
+		bra	init			;bottom of the board initialization for loop
 	
 ; --- DRAWING BOARD AND PROMPT STRINGS ---
 
-game:	cmp.b	#TRUE,(a6)
+game:	cmp.b	#TRUE,(a6)			;beginning of the while(!gameOver && !playerQuit) loop
 	bne	printBoard
 	jmp	score
 	cmp.b	#TRUE,(a3)
 	bne	printBoard
-	jmp	score
+	jmp	score		;break loop if gameOver or playerQuit
 	
 	
 printBoard:	move.w	#PITS_PER_SIDE,d1
@@ -95,7 +95,7 @@ invalid:	move.b	#FALSE,(a5)
 	lea	strInvalid,a0
 	jsr	print_string
 	
-input:	lea	strPlayer,a0	;"Player"
+input:	lea	strPlayer,a0	;"Player"	top of the loop for receiving input
 	jsr	print_string
 	
 	move.b	(a0),d1		;"current player"
@@ -109,7 +109,6 @@ input:	lea	strPlayer,a0	;"Player"
 	lea	strQuit,a0	;") or 'q' to quit: "
 	jsr	print_string
 
-; --- RECEIVING AND PROCESSING INPUT ---
 	jsr	read_char
 	and.l	#$00FF,d0	;bitmasking input
 	move.b	d0,d1	;moving input to d1
@@ -132,7 +131,7 @@ input:	lea	strPlayer,a0	;"Player"
 	cmp.b	d1,d0
 	bhi	invalid	
 	move.b	#TRUE,(a5)	;set validInput = true
-	bra	play
+	bra	play		;bottom of the loop for receiving input
 	
 quit:	move.b	#TRUE,(a6)	
 
