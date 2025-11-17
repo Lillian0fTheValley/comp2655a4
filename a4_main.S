@@ -98,7 +98,7 @@ invalid:	move.b	#FALSE,(a5)
 input:	lea	strPlayer,a0	;"Player"	top of the loop for receiving input
 	jsr	print_string
 	
-	move.b	(a0),d1		;"current player"
+	move.w	(a0),d1		;"current player"
 	jsr	print_number
 	
 	lea	strChoose,a0	;" - choose pit (1- "
@@ -139,7 +139,7 @@ play:	clr.l	d6
 	clr.l	d7
 	tst.b	(a6)		;checks quit == true
 	bne	game
-	cmp.b	#PLAYER2,(a4)
+	cmp.w	#PLAYER2,(a4)
 	beq	p2Turn
 	move.w	#P2_STORE_INDEX,d7
 	move.w	#P1_STORE_INDEX,d6
@@ -168,7 +168,7 @@ shift:	sub.l	#PIT_SZ,d7
 	move.w	PIT_OWNER(a1,d7.l),d2
 	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	beq	place
-	cmp.b	(a4),d2
+	cmp.w	(a4),d2
 	beq	place
 	bra	distribute	;skip if isStore and pitOwner!=PLAYER
 place:	add.w	#1,PIT_STONES_NUM(a1,d7.l)
@@ -197,7 +197,7 @@ steal:	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 pCheck:		move.w	#P1_STORE_INDEX,d7	
 		move.b	#TRUE,(a2)
 		move.w	#1,d6
-		cmp.b	#PLAYER2,(a4)
+		cmp.w	#PLAYER2,(a4)
 		bne	emptyCheckLoop
 		move.w	#P2_STORE_INDEX,d7
 
