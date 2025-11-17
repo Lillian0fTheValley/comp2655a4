@@ -201,6 +201,7 @@ pCheck:		clr.l	d7
 		cmp.w	#PLAYER2,(a4)
 		bne	emptyCheckLoop
 		move.w	#P2_STORE_INDEX,d7
+		mulu.w	#PIT_SZ,d7
 
 emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		bge	turnChange	;break loop if d6 > P2_STORE_INDEX
