@@ -44,13 +44,13 @@ PIT_SZ		equ	4
 ;---------------------------------------------------------------
 
 
-; --- BOARD INITIALIZATION ---	;TODO YOU NEED TO REWRITE INITIALIZATION TO BE IN A FOR LOOP
+; --- BOARD INITIALIZATION ---	
 main:		lea	BOARD,a1
-		lea	QUIT,a6
-		lea	GAMEOVER,a3
-		lea	VALIDINPUT,a5
-		lea	PLAYER,a4
 		lea	ISEMPTY,a2
+		lea	GAMEOVER,a3
+		lea	PLAYER,a4
+		lea	VALIDINPUT,a5
+		lea	QUIT,a6
 		clr.l   d0
 		clr.l	d7
 init:		cmp.w	#TOTAL_PITS,d7
