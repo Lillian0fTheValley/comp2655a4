@@ -59,7 +59,7 @@ init:		cmp.w	#TOTAL_PITS,d7
 		mulu.w	#PIT_SZ,d6
 		move.b	#START_STONES,PIT_STONES_NUM(a1,d6.l)
 		move.b	#FALSE,PIT_STORE_BOOL(a1,d6.l)
-		cmp.w	PITS_PER_SIDE,d7
+		cmp.w	#PITS_PER_SIDE,d7
 		bls	p1Init
 		move.b	#PLAYER2,PIT_OWNER(a1,d6.l)
 		bra	isStore
@@ -76,9 +76,10 @@ isStore:	add.w	#1,d7			;post increment
 	
 ; --- DRAWING BOARD AND RECEIVING INPUT ---
 
-game:	cmp.w	#TRUE,(a6)	;this block checks for either end state
+game:	cmp.b	#TRUE,(a6)
 	bne	printBoard
-	cmp.w	#TRUE,(a3)
+	jmp	score
+	cmp.b	#TRUE,(a3)
 	bne	printBoard
 	jmp	score
 	
