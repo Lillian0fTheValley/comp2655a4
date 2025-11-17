@@ -28,9 +28,9 @@ CR		equ	13
 LF		equ	10
 
 PIT_STONES_NUM	equ	0
-PIT_OWNER	equ	1
-PIT_STORE_BOOL	equ	2
-PIT_SZ		equ	4
+PIT_OWNER	equ	2
+PIT_STORE_BOOL	equ	4
+PIT_SZ		equ	6
 
 ;---------------------------------------------------------------
 ; Register Table
@@ -57,13 +57,13 @@ init:		cmp.w	#TOTAL_PITS,d7		;break loop if index == TOTAL_PITS
 		beq	game
 		move.w	d7,d6
 		mulu.w	#PIT_SZ,d6
-		move.b	#START_STONES,PIT_STONES_NUM(a1,d6.l)
+		move.w	#START_STONES,PIT_STONES_NUM(a1,d6.l)
 		move.b	#FALSE,PIT_STORE_BOOL(a1,d6.l)
 		cmp.w	#PITS_PER_SIDE,d7
 		bls	p1Init
-		move.b	#PLAYER2,PIT_OWNER(a1,d6.l)
+		move.w	#PLAYER2,PIT_OWNER(a1,d6.l)
 		bra	isStore
-p1Init:		move.b	#PLAYER1,PIT_OWNER(a1,d6.l)
+p1Init:		move.w	#PLAYER1,PIT_OWNER(a1,d6.l)
 
 isStore:	divu.w	#PIT_SZ,d6	
 		add.w	#1,d7			;post increment
@@ -73,7 +73,7 @@ isStore:	divu.w	#PIT_SZ,d6
 		bne	init
 storeInit:	mulu.w	#PIT_SZ,d6
 		move.b	#TRUE,PIT_STORE_BOOL(a1,d6.l)
-		move.b	#0,PIT_STONES_NUM(a1,d6.l)
+		move.w	#0,PIT_STONES_NUM(a1,d6.l)
 		bra	init
 	
 ; --- DRAWING BOARD AND PROMPT STRINGS ---
@@ -151,8 +151,8 @@ p2Turn:	move.w	#TOTAL_PITS,d7
 convert:	sub.w	#'0',d0		;converting input to int
 		sub.w	d0,d7		;calculating index = startIndex - input
 		mulu.w	#PIT_SZ,d7	;multiply index by struct size
-		move.b	PIT_STONES_NUM(a1,d7.l),d5
-		clr.b	PIT_STONES_NUM(a1,d7.l)
+		move.w	PIT_STONES_NUM(a1,d7.l),d5
+		clr.w	PIT_STONES_NUM(a1,d7.l)
 	
 
 
@@ -166,7 +166,7 @@ distribute:	tst.w	d5
 	move.w	TOTAL_PITS,d7
 	mulu.w	#PIT_SZ,d7
 shift:	sub.l	#PIT_SZ,d7
-	move.b	PIT_OWNER(a1,d7.l),d2
+	move.w	PIT_OWNER(a1,d7.l),d2
 	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	beq	place
 	cmp.b	(a4),d2
@@ -175,7 +175,7 @@ shift:	sub.l	#PIT_SZ,d7
 place:	add.w	#1,PIT_STONES_NUM(a1,d7.l)
 	dbra	d5,distribute
 
-steal:	cmp.w	#FALSE,PIT_STORE_BOOL(a1,d7.l)
+steal:	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	bne	pCheck
 	cmp.w	(a4),d2
 	bne	pCheck
@@ -185,14 +185,14 @@ steal:	cmp.w	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	move.w	#TOTAL_PITS,d4
 	mulu.w	#PIT_SZ,d4
 	sub.l	d7,d4	;opposite = TOTAL_PITS - index
-	tst.b	PIT_STONES_NUM(a1,d4.l)		;this block adds index pit and opposite pit's stones to your store if opposite pit 
+	tst.w	PIT_STONES_NUM(a1,d4.l)		;this block adds index pit and opposite pit's stones to your store if opposite pit 
 	beq	pCheck
-	move.b	PIT_STONES_NUM(a1,d4.l),d3
-	add.b	#1,d3
-	clr.b	PIT_STONES_NUM(a1,d4.l)
-	clr.b	PIT_STONES_NUM(a1,d7.l)	
+	move.w	PIT_STONES_NUM(a1,d4.l),d3
+	add.w	#1,d3
+	clr.w	PIT_STONES_NUM(a1,d4.l)
+	clr.w	PIT_STONES_NUM(a1,d7.l)	
 	mulu.w	#PIT_SZ,d6
-	add.b	d3,PIT_STONES_NUM(a1,d6.l)
+	add.w	d3,PIT_STONES_NUM(a1,d6.l)
 	
 
 pCheck:		move.w	#P1_STORE_INDEX,d7	
@@ -235,8 +235,8 @@ score:		clr.l	d7
 		mulu.w	#PIT_SZ,d6
 		move.w	#P2_STORE_INDEX,d7
 		mulu.w	#PIT_SZ,d7
-		move.b	PIT_STONES_NUM(a1,d7.l),d2	
-		cmp.b	PIT_STONES_NUM(a1,d6.l),d2
+		move.w	PIT_STONES_NUM(a1,d7.l),d2	
+		cmp.w	PIT_STONES_NUM(a1,d6.l),d2
 		beq	tie
 		bhi	p2Win
 		lea	strP1win,a0
