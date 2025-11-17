@@ -94,8 +94,15 @@ printBoard:	move.w	#PITS_PER_SIDE,d1
 invalid:	move.b	#FALSE,(a5)
 	lea	strInvalid,a0
 	jsr	print_string
+	bra	input
+emptyPit:	lea	strEmpty,a0
+		jsr	print_string
 	
-input:	lea	strPlayer,a0	;"Player"	top of the loop for receiving input
+input:	cmp.b	#TRUE,(a5)	;break loop if validInput or playerQuit
+	beq	play
+	cmp.b	#TRUE,(a6)
+	beq	play
+	lea	strPlayer,a0	;"Player"	top of the loop for receiving input
 	jsr	print_string
 	
 	move.w	(a4),d1		;"current player"
@@ -122,18 +129,29 @@ input:	lea	strPlayer,a0	;"Player"	top of the loop for receiving input
 	move.b	d1,d0		;moving input back to d0 i guess
 
 	cmp.b	#'q',d0	;
-	beq	quit
+	bne	convert
+	move.b	#TRUE,(a6)
+	bra	inputLoop
 	
-	cmp.b	#'0',d0
+convert:sub.w	#'0',d0		;converting input to int
+	sub.w	d0,d7		;calculating index = startIndex - input
+	mulu.w	#PIT_SZ,d7	;multiply index by struct size
+	move.w	PIT_STONES_NUM(a1,d7.l),d5
+	
+	
+	cmp.b	#0,d0
 	bls	invalid
 	move.b	#PITS_PER_SIDE,d1
-	add.b	#'0',d1
 	cmp.b	d1,d0
-	bhi	invalid	
+	bhi	invalid
+	cmp.w	#0,d5
+	beq	emptyPit
 	move.b	#TRUE,(a5)	;set validInput = true
-	bra	play		;bottom of the loop for receiving input
-	
-quit:	move.b	#TRUE,(a6)	
+inputLoop:	tst.b	(a6)	;break loop if validInput or playerQuit
+		bne	play
+		tst.b	(a5)
+		bne	play
+		bra	input
 
 play:	clr.l	d6
 	clr.l	d7
@@ -143,22 +161,18 @@ play:	clr.l	d6
 	beq	p2Turn
 	move.w	#P2_STORE_INDEX,d7
 	move.w	#P1_STORE_INDEX,d6
-	bra	convert
+	bra	pickUp
 p2Turn:	move.w	#TOTAL_PITS,d7
 	move.w	#P2_STORE_INDEX,d6
-
-convert:	sub.w	#'0',d0		;converting input to int
-		sub.w	d0,d7		;calculating index = startIndex - input
-		mulu.w	#PIT_SZ,d7	;multiply index by struct size
-		move.w	PIT_STONES_NUM(a1,d7.l),d5
-		clr.w	PIT_STONES_NUM(a1,d7.l)
 	
-
+pickUp:	clr.l	d5
+	mulu.w	#PIT_SZ,d7
+	move.w	PIT_STONES_NUM(a1,d7.l),d5
+	clr.w	PIT_STONES_NUM(a1,d7.l)
 
 	;beginning of stone distribution loop	
 distribute:	tst.w	d5
 	beq	steal	;break loop if stones = 0
-	mulu.w	#PIT_SZ,d7
 	cmp.l	#P1_STORE_INDEX,d7
 	bne	shift
 	clr.l	d7
