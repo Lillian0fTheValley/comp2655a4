@@ -177,7 +177,7 @@ place:	add.w	#1,PIT_STONES_NUM(a1,d7.l)
 
 steal:	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	bne	pCheck
-	cmp.w	(a4),d2
+	cmp.w	(a4),PIT_OWNER(a1,d7.l)
 	bne	pCheck
 	cmp.w	#1,PIT_STONES_NUM(a1,d7.w)
 	bne	pCheck
@@ -217,11 +217,11 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		bra	emptyCheckLoop	;loop
 
 
-turnChange:	cmp.b	#PLAYER1,(a4)
+turnChange:	cmp.w	#PLAYER1,(a4)
 		bne	setP1
-		move.b	#PLAYER2,(a4)
+		move.w	#PLAYER2,(a4)
 		jmp	game
-setP1:		move.b	#PLAYER1,(a4)
+setP1:		move.w	#PLAYER1,(a4)
 		jmp	game
 
 score:		clr.l	d7
@@ -306,7 +306,7 @@ GAMEOVER	dc.b	FALSE
 
 VALIDINPUT	dc.b	FALSE
 
-PLAYER		dc.b	PLAYER1
+PLAYER		dc.w	PLAYER1
 
 ISEMPTY		dc.b	TRUE
 ;---------------------------------------------------------------
