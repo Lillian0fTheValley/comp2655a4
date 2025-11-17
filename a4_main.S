@@ -162,7 +162,7 @@ distribute:	tst.w	d5
 shift:	sub.l	#PIT_SZ,d7
 	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	beq	place
-	cmp.b	PIT_OWNER(a1,d7.l),(a4)
+	cmp.b	(a4),PIT_OWNER(a1,d7.l)
 	beq	place
 	bra	distribute	;skip if isStore and pitOwner!=PLAYER
 place:	add.w	#1,PIT_STONES_NUM(a1,d7.l)
@@ -199,11 +199,12 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		bge	turnChange	;break loop if d6 > P2_STORE_INDEX
 		tst.b	(a2)
 		beq	turnChange	;break loop if !isEmpty
-		move.w	#PIT_SZ,d2
-		mulu.w	d6,d2
-		add.l	d7,d2
+		clr.l		d4
+		move.w	#PIT_SZ,d4
+		mulu.w	d6,d4
+		add.l	d7,d4
 		add.w	#1,d6		;post increment d6
-		cmp.w	#0,PIT_STONES_NUM(a1,d2.l)
+		cmp.w	#0,PIT_STONES_NUM(a1,d4.l)
 		beq	emptyCheckLoop	;set isEmpty to false if stones != 0
 		move.b	#FALSE,(a2)
 		bra	emptyCheckLoop	;loop
