@@ -65,11 +65,13 @@ init:		cmp.w	#TOTAL_PITS,d7
 		bra	isStore
 p1Init:		move.b	#PLAYER1,PIT_OWNER(a1,d6.l)
 
-isStore:	add.w	#1,d7			;post increment
-		cmp.w	#P1_STORE_INDEX+1,d7	
+isStore:	divu.w	#PIT_SZ,d6	
+		add.w	#1,d7			;post increment
+		cmp.w	#P1_STORE_INDEX,d6	
 		bne	init
-		cmp.w	#P2_STORE_INDEX+1,d7
+		cmp.w	#P2_STORE_INDEX,d6
 		bne	init
+		mulu.w	#PIT_SZ,d6
 		move.b	#TRUE,PIT_STORE_BOOL(a1,d6.l)
 		move.b	#0,PIT_STONES_NUM(a1,d6.l)
 		bra	init
