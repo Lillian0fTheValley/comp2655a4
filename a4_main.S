@@ -51,7 +51,7 @@ main:		lea	BOARD,a1
 		lea	VALIDINPUT,a5
 		lea	PLAYER,a4
 		lea	ISEMPTY,a2
-
+		clr.l   d0
 		clr.l	d7
 init:		cmp.w	#TOTAL_PITS,d7
 		beq	game
@@ -68,10 +68,10 @@ p1Init:		move.b	#PLAYER1,PIT_OWNER(a1,d6.l)
 isStore:	divu.w	#PIT_SZ,d6	
 		add.w	#1,d7			;post increment
 		cmp.w	#P1_STORE_INDEX,d6	
-		bne	init
+		beq	storeInit
 		cmp.w	#P2_STORE_INDEX,d6
 		bne	init
-		mulu.w	#PIT_SZ,d6
+storeInit:	mulu.w	#PIT_SZ,d6
 		move.b	#TRUE,PIT_STORE_BOOL(a1,d6.l)
 		move.b	#0,PIT_STONES_NUM(a1,d6.l)
 		bra	init
@@ -87,6 +87,7 @@ game:	cmp.b	#TRUE,(a6)
 	
 	
 printBoard:	move.w	#PITS_PER_SIDE,d1
+	lea	BOARD,a0	
 	jsr	print_board
 	bra	input
 
@@ -97,7 +98,7 @@ invalid:	move.b	#FALSE,(a5)
 input:	lea	strPlayer,a0	;"Player"
 	jsr	print_string
 	
-	move.w	(a0),d1		;"current player"
+	move.b	(a0),d1		;"current player"
 	jsr	print_number
 	
 	lea	strChoose,a0	;" - choose pit (1- "
@@ -109,6 +110,7 @@ input:	lea	strPlayer,a0	;"Player"
 	jsr	print_string
 
 	jsr	read_char
+	and.l	#$000F,d0	;bitmasking input
 	move.b	d0,d1	;moving input to d1
 	move.b	#CR,d0		;CRLF after receiving input
 	jsr	write_char
