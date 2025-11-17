@@ -32,7 +32,6 @@ PIT_OWNER	equ	1
 PIT_STORE_BOOL	equ	2
 PIT_SZ		equ	4
 
-
 ;---------------------------------------------------------------
 ; Register Table
 ;
@@ -65,7 +64,7 @@ init:		cmp.w	#TOTAL_PITS,d7
 		move.b	#PLAYER2,PIT_OWNER(a1,d6.l)
 		bra	isStore
 p1Init:		move.b	#PLAYER1,PIT_OWNER(a1,d6.l)
-	
+
 isStore:	add.w	#1,d7			;post increment
 		cmp.w	#P1_STORE_INDEX+1,d7	
 		bne	init
@@ -239,6 +238,10 @@ score:		clr.l	d7
 p2Win:		lea	strP2win,a0
 		jsr	print_string
 		bra	exit
+		
+tie:		lea	strTie,a0
+		jsr	print_string
+		bra	end
 
 endQuit:	lea	strPlayer,a0
 		jsr	print_string
@@ -250,7 +253,7 @@ endQuit:	lea	strPlayer,a0
 end:		move.b	#CR,d0
 		jsr	write_char
 		move.b	#LF,d0
-		write_char
+		jsr	write_char
 		jsr exit
 
 ; TODO - Place your code here
