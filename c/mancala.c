@@ -63,7 +63,7 @@ int main()
     {
       print_string ("Player ");
       print_number (player);
-      print_string (" — choose pit (1-");
+      print_string (" - choose pit (1-");
       print_number (PITS_PER_SIDE);
       print_string (") or 'q' to quit: ");
       read_char ();
