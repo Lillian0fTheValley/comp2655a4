@@ -53,7 +53,7 @@ main:		lea	BOARD,a1
 		lea	QUIT,a6
 		clr.l   d0
 		clr.l	d7
-init:		cmp.w	#TOTAL_PITS,d7
+init:		cmp.w	#TOTAL_PITS,d7		;break loop if index == TOTAL_PITS
 		beq	game
 		move.w	d7,d6
 		mulu.w	#PIT_SZ,d6
@@ -76,7 +76,7 @@ storeInit:	mulu.w	#PIT_SZ,d6
 		move.b	#0,PIT_STONES_NUM(a1,d6.l)
 		bra	init
 	
-; --- DRAWING BOARD AND RECEIVING INPUT ---
+; --- DRAWING BOARD AND PROMPT STRINGS ---
 
 game:	cmp.b	#TRUE,(a6)
 	bne	printBoard
@@ -109,8 +109,9 @@ input:	lea	strPlayer,a0	;"Player"
 	lea	strQuit,a0	;") or 'q' to quit: "
 	jsr	print_string
 
+; --- RECEIVING AND PROCESSING INPUT ---
 	jsr	read_char
-	and.l	#$000F,d0	;bitmasking input
+	and.l	#$00FF,d0	;bitmasking input
 	move.b	d0,d1	;moving input to d1
 	move.b	#CR,d0		;CRLF after receiving input
 	jsr	write_char
@@ -150,7 +151,7 @@ p2Turn:	move.w	#TOTAL_PITS,d7
 convert:	sub.w	#'0',d0		;converting input to int
 		sub.w	d0,d7		;calculating index = startIndex - input
 		mulu.w	#PIT_SZ,d7	;multiply index by struct size
-		move.w	PIT_STONES_NUM(a1,d7.l),d5
+		move.b	PIT_STONES_NUM(a1,d7.l),d5
 		clr.b	PIT_STONES_NUM(a1,d7.l)
 	
 
@@ -158,6 +159,7 @@ convert:	sub.w	#'0',d0		;converting input to int
 	;beginning of stone distribution loop	
 distribute:	tst.w	d5
 	beq	steal	;break loop if stones = 0
+	mulu.w	#PIT_SZ,d7
 	cmp.l	#P1_STORE_INDEX,d7
 	bne	shift
 	clr.l	d7
