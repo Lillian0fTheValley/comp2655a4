@@ -78,12 +78,13 @@ isStore:	add.w	#1,d7			;post increment
 ; --- DRAWING BOARD AND RECEIVING INPUT ---
 
 game:	cmp.w	#TRUE,(a6)	;this block checks for either end state
-	;beq	end
-	cmp.w	#TRUE,(a7)
-	;beq	endQuit
-
+	bne	printBoard
+	cmp.w	#TRUE,(a3)
+	bne	printBoard
+	jmp	score
 	
-	move.w	#PITS_PER_SIDE,d1
+	
+printBoard:	move.w	#PITS_PER_SIDE,d1
 	jsr	print_board
 	bra	input
 
@@ -124,9 +125,9 @@ input:	lea	strPlayer,a0	;"Player"
 	move.b	#PITS_PER_SIDE,d1
 	add.b	#'0',d1
 	cmp.b	d1,d0
-	bgt	invalid	
+	bhi	invalid	
 	move.b	#TRUE,(a5)	;set validInput = true
-	
+	bra	play
 	
 quit:	move.b	#TRUE,(a6)	
 
@@ -208,17 +209,46 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		bra	emptyCheckLoop	;loop
 
 
-turnChange	cmp.b	#PLAYER1,(a4)
+turnChange:	cmp.b	#PLAYER1,(a4)
 		bne	setP1
 		move.b	#PLAYER2,(a4)
-		jmp	input
-setP1		move.b	#PLAYER1,(a4)
-		jmp	input
+		jmp	game
+setP1:		move.b	#PLAYER1,(a4)
+		jmp	game
 
+score:		clr.l	d7
+		clr.l	d6
+		move.w	#PITS_PER_SIDE,d1
+		lea	BOARD,a0
+		jsr	print_board
+		cmp.b	(a6)
+		beq	endQuit
+		move.w	#P1_STORE_INDEX,d6
+		mulu.w	#PIT_SZ,d6
+		move.w	#P2_STORE_INDEX,d7
+		mulu.w	#PIT_SZ,d7
+		cmp.b	PIT_STONES_NUM(a1,d6.l),PIT_STONES_NUM(a1,d7.l)
+		beq	tie
+		bhi	p2Win
+		lea	strP1win,a0
+		jsr	print_string
+		bra	exit
+p2Win:		lea	strP2win,a0
+		jsr	print_string
+		bra	exit
 
-score:
-
-	jsr exit
+endQuit:	lea	strPlayer,a0
+		jsr	print_string
+		move.w	(a4),d1
+		jsr	print_number
+		lea	strQuitEnd,a0
+		jsr	print_string
+		
+end:		move.b	#CR,d0
+		write_char
+		move.b	#LF,d0
+		write_char
+		jsr exit
 
 ; TODO - Place your code here
 ; Your output must match the C version of Mancala exactly
