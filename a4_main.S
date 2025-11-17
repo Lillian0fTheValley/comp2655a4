@@ -160,9 +160,10 @@ distribute:	tst.w	d5
 	move.w	TOTAL_PITS,d7
 	mulu.w	#PIT_SZ,d7
 shift:	sub.l	#PIT_SZ,d7
+	move.b	PIT_OWNER(a1,d7.l),d2
 	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	beq	place
-	cmp.b	(a4),PIT_OWNER(a1,d7.l)
+	cmp.b	(a4),d2
 	beq	place
 	bra	distribute	;skip if isStore and pitOwner!=PLAYER
 place:	add.w	#1,PIT_STONES_NUM(a1,d7.l)
@@ -170,7 +171,7 @@ place:	add.w	#1,PIT_STONES_NUM(a1,d7.l)
 
 steal:	cmp.w	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	bne	pCheck
-	cmp.w	(a4),PIT_OWNER(a1,d7.l)
+	cmp.w	(a4),d2
 	bne	pCheck
 	cmp.w	#1,PIT_STONES_NUM(a1,d7.w)
 	bne	pCheck
@@ -199,7 +200,7 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		bge	turnChange	;break loop if d6 > P2_STORE_INDEX
 		tst.b	(a2)
 		beq	turnChange	;break loop if !isEmpty
-		clr.l		d4
+		clr.l	d4
 		move.w	#PIT_SZ,d4
 		mulu.w	d6,d4
 		add.l	d7,d4
@@ -222,13 +223,14 @@ score:		clr.l	d7
 		move.w	#PITS_PER_SIDE,d1
 		lea	BOARD,a0
 		jsr	print_board
-		cmp.b	(a6)
-		beq	endQuit
+		tst.b	(a6)
+		bne	endQuit
 		move.w	#P1_STORE_INDEX,d6
 		mulu.w	#PIT_SZ,d6
 		move.w	#P2_STORE_INDEX,d7
 		mulu.w	#PIT_SZ,d7
-		cmp.b	PIT_STONES_NUM(a1,d6.l),PIT_STONES_NUM(a1,d7.l)
+		move.b	PIT_STONES_NUM(a1,d7.l),d2	
+		cmp.b	PIT_STONES_NUM(a1,d6.l),d2
 		beq	tie
 		bhi	p2Win
 		lea	strP1win,a0
@@ -246,7 +248,7 @@ endQuit:	lea	strPlayer,a0
 		jsr	print_string
 		
 end:		move.b	#CR,d0
-		write_char
+		jsr	write_char
 		move.b	#LF,d0
 		write_char
 		jsr exit
