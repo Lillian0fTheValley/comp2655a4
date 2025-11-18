@@ -215,7 +215,8 @@ steal:	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	add.w	d3,PIT_STONES_NUM(a1,d6.l)
 	
 
-pCheck:		clr.l	d7	
+pCheck:		clr.l	d7
+		clr.l	d6
 		move.w	#P1_STORE_INDEX,d7	
 		move.b	#TRUE,(a2)
 		move.w	#1,d6
@@ -234,7 +235,7 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		add.l	d7,d4
 		add.w	#1,d6		;post increment d6
 		cmp.w	#0,PIT_STONES_NUM(a1,d4.l)
-		bne	emptyCheckLoop	;set isEmpty to false if stones != 0
+		beq	emptyCheckLoop	;set isEmpty to false if stones != 0
 		move.b	#FALSE,(a2)
 		bra	emptyCheckLoop	;loop
 
