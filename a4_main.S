@@ -225,10 +225,10 @@ pCheck:		clr.l	d7
 		move.w	#P2_STORE_INDEX,d7
 		mulu.w	#PIT_SZ,d7
 
-emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
-		beq	gameOver	;break loop if d6 == P2_STORE_INDEX
-		tst.b	(a2)
+emptyCheckLoop:	tst.b	(a2)
 		beq	turnChange	;break loop if !isEmpty
+		cmp.w	#PITS_PER_SIDE+1,d6
+		beq	gameOver	;break loop if d6 == P2_STORE_INDEX
 		clr.l	d4
 		move.w	#PIT_SZ,d4
 		mulu.w	d6,d4
@@ -239,7 +239,7 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		move.b	#FALSE,(a2)
 		bra	emptyCheckLoop	;loop
 
-gameOver	move.b	#TRUE,(a3)
+gameOver:	move.b	#TRUE,(a3)
 		bra	score	
 
 turnChange:	cmp.w	#PLAYER1,(a4)
@@ -287,36 +287,6 @@ end:		move.b	#CR,d0
 		move.b	#LF,d0
 		jsr	write_char
 		jsr exit
-
-; TODO - Place your code here
-; Your output must match the C version of Mancala exactly
-;
-; The code here is some example code that does the following:
-; 1. prints a null terminated string using print_string
-; 2. prints out an unsigned integer that fits into a word using print_number
-; 3. a newline is printed after both output items
-;
-; You MUST remove the following testing code in your final submission
-; --- START of testing code ---
-;	lea 	test_str,a0
-;	jsr		print_string
-;
-;	move.b	#CR,d0			; move to new line
-;	jsr		write_char
-;	move.b	#LF,d0
-;	jsr		write_char
-;
-;	move.w	#3579,d1
-;
-;	jsr		print_number
-;
-;	move.b	#CR,d0			; move to new line
-;	jsr		write_char
-;	move.b	#LF,d0
-;	jsr		write_char
-;	
-; --- END of testing code ---
-
 
 ;---------------------------------------------------------------
 ;        DATA 
