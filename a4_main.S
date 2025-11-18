@@ -255,7 +255,7 @@ score:		clr.l	d7
 		lea	BOARD,a0
 		jsr	print_board
 		tst.b	(a6)
-		bne	endQuit
+		bne	quit
 		move.w	#P1_STORE_INDEX,d6
 		mulu.w	#PIT_SZ,d6
 		move.w	#P2_STORE_INDEX,d7
@@ -275,7 +275,7 @@ tie:		lea	strTie,a0
 		jsr	print_string
 		bra	end
 
-endQuit:	lea	strPlayer,a0
+quit:		lea	strPlayer,a0
 		jsr	print_string
 		move.w	(a4),d1
 		jsr	print_number
