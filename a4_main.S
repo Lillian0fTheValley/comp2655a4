@@ -92,18 +92,18 @@ storeInit:	mulu.w	#PIT_SZ,d6
 	
 ; --- DRAWING BOARD AND PROMPT STRINGS ---
 ;TOP OF while(!gameOver && !playerQuit) LOOP
-game:	cmp.b	#TRUE,(a6)			
-	bne	printBoard
-	jmp	score
-	cmp.b	#TRUE,(a3)
-	bne	printBoard
-	jmp	score				;break loop if gameOver or playerQuit
+game:		cmp.b	#TRUE,(a6)			
+		bne	printBoard
+		jmp	score
+		cmp.b	#TRUE,(a3)
+		bne	printBoard
+		jmp	score				;break loop if gameOver or playerQuit
 	
 printBoard:	move.w	#PITS_PER_SIDE,d1
-	lea	BOARD,a0	
-	jsr	print_board
-	move.b	#FALSE,(a5)
-	bra	input
+		lea	BOARD,a0	
+		jsr	print_board
+		move.b	#FALSE,(a5)
+		bra	input
 
 invalid:	lea	strInvalid,a0
 		jsr	print_string
