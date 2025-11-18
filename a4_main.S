@@ -1,6 +1,7 @@
-;===============================================================
-;  
-; Your output must match the C version of Mancala exactly
+;Assignment 4
+;Student: Lillian Ma
+;Class: COMP 2655-002
+;Professor: Terrance Mok
 ;
 ;===============================================================
 
@@ -27,24 +28,33 @@ FALSE		equ	0
 CR		equ	13
 LF		equ	10
 
-PIT_STONES_NUM	equ	0
+
+;array offset declarations
+PIT_STONES_NUM	equ	0	
 PIT_OWNER	equ	2
 PIT_STORE_BOOL	equ	4
 PIT_SZ		equ	6
 
 ;---------------------------------------------------------------
 ; Register Table
-;
-;
-;
-;
-;
-;
-;d7 = 
+;d0 = read_char, write_char
+;d1 = print_num, print_board
+;d2 = holds value stored at PIT_OWNER(a1,d7.l) for cmp
+;d3 = opponentStones - # of stones in opponentIndex pit
+;d4 = oppositeIndex - for use in steal
+;d5 = word stones
+;d6 = storeIndex - for calculating index
+;d7 = startIndex - for calculating index
+;(a0) = print_board, print_str 
+;(a1) = PIT[] BOARD
+;(a2) = bool ISEMPTY
+;(a3) = bool GAMEOVER
+;(a4) = word PLAYER
+;(a5) = bool VALIDINPUT
+;(a6) = bool QUIT
 ;---------------------------------------------------------------
 
 
-; --- BOARD INITIALIZATION ---	
 main:		lea	BOARD,a1
 		lea	ISEMPTY,a2
 		lea	GAMEOVER,a3
@@ -53,8 +63,11 @@ main:		lea	BOARD,a1
 		lea	QUIT,a6
 		clr.l   d0
 		clr.l	d7
-init:		cmp.w	#TOTAL_PITS,d7		;beginning of the board initialization for loop
-		beq	game	;break loop if d7 = TOTAL_PITS
+
+; --- BOARD INITIALIZATION ---
+;TOP OF THE BOARD INITIALIZATION FOR LOOP
+init:		cmp.w	#TOTAL_PITS,d7		
+		beq	game			;break loop if d7 = TOTAL_PITS
 		move.w	d7,d6
 		mulu.w	#PIT_SZ,d6
 		move.w	#START_STONES,PIT_STONES_NUM(a1,d6.l)
@@ -65,7 +78,7 @@ init:		cmp.w	#TOTAL_PITS,d7		;beginning of the board initialization for loop
 		bra	isStore
 p1Init:		move.w	#PLAYER1,PIT_OWNER(a1,d6.l)
 
-isStore:	divu.w	#PIT_SZ,d6	
+isStore:	divu.w	#PIT_SZ,d6
 		add.w	#1,d7			;post increment
 		cmp.w	#P1_STORE_INDEX,d6	
 		beq	storeInit
@@ -74,17 +87,17 @@ isStore:	divu.w	#PIT_SZ,d6
 storeInit:	mulu.w	#PIT_SZ,d6
 		move.b	#TRUE,PIT_STORE_BOOL(a1,d6.l)
 		move.w	#0,PIT_STONES_NUM(a1,d6.l)
-		bra	init			;bottom of the board initialization for loop
+		bra	init			
+;BOTTOM OF THE BOARD INITIALIZATION FOR LOOP
 	
 ; --- DRAWING BOARD AND PROMPT STRINGS ---
-
-game:	cmp.b	#TRUE,(a6)			;beginning of the while(!gameOver && !playerQuit) loop
+;TOP OF while(!gameOver && !playerQuit) LOOP
+game:	cmp.b	#TRUE,(a6)			
 	bne	printBoard
 	jmp	score
 	cmp.b	#TRUE,(a3)
 	bne	printBoard
-	jmp	score		;break loop if gameOver or playerQuit
-	
+	jmp	score				;break loop if gameOver or playerQuit
 	
 printBoard:	move.w	#PITS_PER_SIDE,d1
 	lea	BOARD,a0	
@@ -98,11 +111,11 @@ invalid:	lea	strInvalid,a0
 emptyPit:	lea	strEmpty,a0
 		jsr	print_string
 	
-input:	cmp.b	#TRUE,(a5)	;break loop if validInput or playerQuit
+input:	cmp.b	#TRUE,(a5)	;TOP OF DO/WHILE LOOP FOR RECEIVING INPUT
 	beq	play
 	cmp.b	#TRUE,(a6)
 	beq	play
-	lea	strPlayer,a0	;"Player"	top of the loop for receiving input
+	lea	strPlayer,a0	;"Player"	
 	jsr	print_string
 	
 	move.w	(a4),d1		;"current player"
@@ -118,15 +131,15 @@ input:	cmp.b	#TRUE,(a5)	;break loop if validInput or playerQuit
 
 	jsr	read_char
 	and.l	#$00FF,d0	;bitmasking input
-	move.b	d0,d1	;moving input to d1
+	move.b	d0,d1	
 	move.b	#CR,d0		;CRLF after receiving input
 	jsr	write_char
 	move.b	#LF,d0
 	jsr	write_char
-	;expected output: Player x - choose pit (1-PITS_PER_SIDE) or 'q' to quit: 
 	
+; --- CALCULATING INDEX ---
 	
-	move.b	d1,d0		;moving input back to d0 i guess
+	move.b	d1,d0		
 
 	cmp.b	#'q',d0	;
 	bne	convert
@@ -142,9 +155,8 @@ convert:sub.w	#'0',d0		;converting input to int
 p2Ind:	move.w	#TOTAL_PITS,d7
 
 indSet	sub.w	d0,d7		;calculating index = startIndex - input
-	mulu.w	#PIT_SZ,d7	;multiply index by struct size
+	mulu.w	#PIT_SZ,d7	
 	move.w	PIT_STONES_NUM(a1,d7.l),d5
-	
 	
 	cmp.b	#0,d0
 	bls	invalid
@@ -153,15 +165,19 @@ indSet	sub.w	d0,d7		;calculating index = startIndex - input
 	bhi	invalid
 	cmp.w	#0,d5
 	beq	emptyPit
-	move.b	#TRUE,(a5)	;set validInput = true
+	move.b	#TRUE,(a5)
+
 inputLoop:	tst.b	(a6)	;break loop if validInput or playerQuit
 		bne	play
 		tst.b	(a5)
 		bne	play
-		bra	input
+		bra	input	
+		;BOTTOM OF DO/WHILE LOOP FOR REEIVING INPUT
 
-play:	clr.l	d6
-	tst.b	(a6)		;checks quit == true
+
+; --- GAME LOGIC ---
+play:	clr.l	d6		
+	tst.b	(a6)		;if !playerQuit	
 	bne	game
 	cmp.w	#PLAYER2,(a4)
 	beq	p2Turn
@@ -171,41 +187,44 @@ play:	clr.l	d6
 p2Turn:	move.w	#TOTAL_PITS,d7
 	move.w	#P2_STORE_INDEX,d6
 	
-pickUp:	clr.l	d5
+pickUp:	clr.l	d5		;this code block removes stones from array location and places in d5 for distribution
 	sub.w	d0,d7
 	mulu.w	#PIT_SZ,d7
 	move.w	PIT_STONES_NUM(a1,d7.l),d5
 	clr.w	PIT_STONES_NUM(a1,d7.l)
 
-	;beginning of stone distribution loop	
+;BEGINNING OF STONE DISTRIBUTION LOOP
 distribute:	tst.w	d5
-	beq	steal	;break loop if stones = 0
-	cmp.l	#P1_STORE_INDEX,d7
-	bne	shift
-	clr.l	d7
-	move.w	#TOTAL_PITS,d7
-	mulu.w	#PIT_SZ,d7
-shift:	sub.l	#PIT_SZ,d7
+		beq	steal	;break loop if stones = 0
+		cmp.l	#P1_STORE_INDEX,d7
+		bne	shift
+		clr.l	d7
+		move.w	#TOTAL_PITS,d7
+		mulu.w	#PIT_SZ,d7
+		
+shift:	sub.l	#PIT_SZ,d7	;this code block shifts d7 to the next array
 	move.w	PIT_OWNER(a1,d7.l),d2
 	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	beq	place
 	cmp.w	(a4),d2
 	beq	place
-	bra	distribute	;skip if isStore and pitOwner!=PLAYER
+	bra	distribute	;skip if pit isStore and pitOwner!=PLAYER
+	
 place:	add.w	#1,PIT_STONES_NUM(a1,d7.l)
 	dbra	d5,distribute
+;BOTTOM OF STONE DISTRIBUTION LOOP
 
-steal:	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
+steal:	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)	;steal moves opposite pit's stones and placed stone into currentPlayer's store
 	bne	pCheck
 	cmp.w	(a4),d2
 	bne	pCheck
 	cmp.w	#1,PIT_STONES_NUM(a1,d7.l)
 	bne	pCheck
 	
-	move.w	#TOTAL_PITS,d4
+	move.w	#TOTAL_PITS,d4		;this block adds index pit and opposite pit's stones to current player's store
 	mulu.w	#PIT_SZ,d4
 	sub.l	d7,d4	;opposite = TOTAL_PITS - index
-	tst.w	PIT_STONES_NUM(a1,d4.l)		;this block adds index pit and opposite pit's stones to your store if opposite pit 
+	tst.w	PIT_STONES_NUM(a1,d4.l)		
 	beq	pCheck
 	move.w	PIT_STONES_NUM(a1,d4.l),d3
 	add.w	#1,d3
@@ -215,7 +234,7 @@ steal:	cmp.b	#FALSE,PIT_STORE_BOOL(a1,d7.l)
 	add.w	d3,PIT_STONES_NUM(a1,d6.l)
 	
 
-pCheck:		clr.l	d7
+pCheck:		clr.l	d7			;pCheck block sets d7=STORE_INDEX according to current player
 		clr.l	d6
 		move.w	#P1_STORE_INDEX,d7	
 		move.b	#TRUE,(a2)
@@ -225,7 +244,7 @@ pCheck:		clr.l	d7
 		move.w	#P2_STORE_INDEX,d7
 		mulu.w	#PIT_SZ,d7
 
-emptyCheckLoop:	tst.b	(a2)
+emptyCheckLoop:	tst.b	(a2)		;emptyCheckLoop is a for loop that loops through current player's pits to check if all are empty	
 		beq	turnChange	;break loop if !isEmpty
 		cmp.w	#PITS_PER_SIDE+1,d6
 		beq	gameOver	;break loop if d6 == P2_STORE_INDEX
@@ -239,30 +258,33 @@ emptyCheckLoop:	tst.b	(a2)
 		move.b	#FALSE,(a2)
 		bra	emptyCheckLoop	;loop
 
-gameOver:	move.b	#TRUE,(a3)
+gameOver:	move.b	#TRUE,(a3)	;gameOver is only set by emptyCheckLoop	
 		bra	score	
 
-turnChange:	cmp.w	#PLAYER1,(a4)
+turnChange:	cmp.w	#PLAYER1,(a4)	;turnChange changes current player for next turn 
 		bne	setP1
 		move.w	#PLAYER2,(a4)
 		jmp	game
 setP1:		move.w	#PLAYER1,(a4)
 		jmp	game
+;BOTTOM OF if(!playerQuit)
+;BOTTOM OF while(!gameOver && !playerQuit) LOOP
 
-score:		clr.l	d7
+;--- OUTPUT GAME RESULT ---
+score:		clr.l	d7		;score prints final board and outputs relevant end message	
 		clr.l	d6
 		move.w	#PITS_PER_SIDE,d1
 		lea	BOARD,a0
 		jsr	print_board
 		tst.b	(a6)
-		bne	quit
+		bne	quit		;check quit first	
 		move.w	#P1_STORE_INDEX,d6
 		mulu.w	#PIT_SZ,d6
 		move.w	#P2_STORE_INDEX,d7
 		mulu.w	#PIT_SZ,d7
 		move.w	PIT_STONES_NUM(a1,d7.l),d2	
 		cmp.w	PIT_STONES_NUM(a1,d6.l),d2
-		beq	tie
+		beq	tie	
 		bhi	p2Win
 		lea	strP1win,a0
 		jsr	print_string
