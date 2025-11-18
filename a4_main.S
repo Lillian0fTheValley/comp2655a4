@@ -89,12 +89,12 @@ game:	cmp.b	#TRUE,(a6)			;beginning of the while(!gameOver && !playerQuit) loop
 printBoard:	move.w	#PITS_PER_SIDE,d1
 	lea	BOARD,a0	
 	jsr	print_board
+	move.b	#FALSE,(a5)
 	bra	input
 
-invalid:	move.b	#FALSE,(a5)
-	lea	strInvalid,a0
-	jsr	print_string
-	bra	input
+invalid:	lea	strInvalid,a0
+		jsr	print_string
+		bra	input
 emptyPit:	lea	strEmpty,a0
 		jsr	print_string
 	
