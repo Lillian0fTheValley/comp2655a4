@@ -129,20 +129,19 @@ input:	cmp.b	#TRUE,(a5)	;break loop if validInput or playerQuit
 	move.b	d1,d0		;moving input back to d0 i guess
 
 	cmp.b	#'q',d0	;
-	bne	indexSet
+	bne	convert
 	move.b	#TRUE,(a6)
 	bra	inputLoop
 	
-indexSet:	cmp.w	#PLAYER2,(a4)
-	beq	p2Turn
-	move.w	#P2_STORE_INDEX,d7
-	move.w	#P1_STORE_INDEX,d6
-	bra	pickUp
-p2Turn:	move.w	#TOTAL_PITS,d7
-	move.w	#P2_STORE_INDEX,d6
-
 convert:sub.w	#'0',d0		;converting input to int
-	sub.w	d0,d7		;calculating index = startIndex - input
+
+	cmp.w	#PLAYER2,(a4)
+	beq	p2Ind
+	move.w	#P2_STORE_INDEX,d7
+	bra	indSet
+p2Ind:	move.w	#TOTAL_PITS,d7
+
+indSet	sub.w	d0,d7		;calculating index = startIndex - input
 	mulu.w	#PIT_SZ,d7	;multiply index by struct size
 	move.w	PIT_STONES_NUM(a1,d7.l),d5
 	
@@ -164,7 +163,14 @@ inputLoop:	tst.b	(a6)	;break loop if validInput or playerQuit
 play:	clr.l	d6
 	tst.b	(a6)		;checks quit == true
 	bne	game
-		
+	cmp.w	#PLAYER2,(a4)
+	beq	p2Turn
+	move.w	#P2_STORE_INDEX,d7
+	move.w	#P1_STORE_INDEX,d6
+	bra	pickUp
+p2Turn:	move.w	#TOTAL_PITS,d7
+	move.w	#P2_STORE_INDEX,d6
+	
 pickUp:	clr.l	d5
 	sub.w	d0,d7
 	mulu.w	#PIT_SZ,d7
