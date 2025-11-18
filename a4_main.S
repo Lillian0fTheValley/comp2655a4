@@ -154,7 +154,6 @@ inputLoop:	tst.b	(a6)	;break loop if validInput or playerQuit
 		bra	input
 
 play:	clr.l	d6
-	clr.l	d7
 	tst.b	(a6)		;checks quit == true
 	bne	game
 	cmp.w	#PLAYER2,(a4)
@@ -166,6 +165,7 @@ p2Turn:	move.w	#TOTAL_PITS,d7
 	move.w	#P2_STORE_INDEX,d6
 	
 pickUp:	clr.l	d5
+	sub.w	d0,d7
 	mulu.w	#PIT_SZ,d7
 	move.w	PIT_STONES_NUM(a1,d7.l),d5
 	clr.w	PIT_STONES_NUM(a1,d7.l)
