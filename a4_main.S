@@ -226,7 +226,7 @@ pCheck:		clr.l	d7
 		mulu.w	#PIT_SZ,d7
 
 emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
-		beq	turnChange	;break loop if d6 == P2_STORE_INDEX
+		beq	gameOver	;break loop if d6 == P2_STORE_INDEX
 		tst.b	(a2)
 		beq	turnChange	;break loop if !isEmpty
 		clr.l	d4
@@ -239,6 +239,8 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		move.b	#FALSE,(a2)
 		bra	emptyCheckLoop	;loop
 
+gameOver	move.b	#TRUE,(a3)
+		bra	score	
 
 turnChange:	cmp.w	#PLAYER1,(a4)
 		bne	setP1
