@@ -176,7 +176,7 @@ distribute:	tst.w	d5
 	cmp.l	#P1_STORE_INDEX,d7
 	bne	shift
 	clr.l	d7
-	move.w	TOTAL_PITS,d7
+	move.w	#TOTAL_PITS,d7
 	mulu.w	#PIT_SZ,d7
 shift:	sub.l	#PIT_SZ,d7
 	move.w	PIT_OWNER(a1,d7.l),d2
@@ -218,7 +218,7 @@ pCheck:		clr.l	d7
 		mulu.w	#PIT_SZ,d7
 
 emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
-		bge	turnChange	;break loop if d6 > P2_STORE_INDEX
+		beq	turnChange	;break loop if d6 == P2_STORE_INDEX
 		tst.b	(a2)
 		beq	turnChange	;break loop if !isEmpty
 		clr.l	d4
@@ -227,7 +227,7 @@ emptyCheckLoop:	cmp.w	#PITS_PER_SIDE+1,d6
 		add.l	d7,d4
 		add.w	#1,d6		;post increment d6
 		cmp.w	#0,PIT_STONES_NUM(a1,d4.l)
-		beq	emptyCheckLoop	;set isEmpty to false if stones != 0
+		bne	emptyCheckLoop	;set isEmpty to false if stones != 0
 		move.b	#FALSE,(a2)
 		bra	emptyCheckLoop	;loop
 
